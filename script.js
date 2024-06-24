@@ -99,6 +99,7 @@ function calculateFutureValue() {
     const rothAmount = parseFloat(document.getElementById('roth-amount').value) || 0;
     const debtAmount = parseFloat(document.getElementById('debt-amount').value) || 0;
     const bankAmount = parseFloat(document.getElementById('bank-amount').value) || 0;
+    const charityAmount = parseFloat(document.getElementById('charity').value) || 0;
 
     const years = parseInt(document.getElementById('years').value) || 0;
 
@@ -127,7 +128,8 @@ function calculateFutureValue() {
         debtFutureValue,
         bankAmount,
         bankRate,
-        bankFutureValue
+        bankFutureValue,
+        charityAmount
     };
 
     localStorage.setItem('investmentResults', JSON.stringify(results));
