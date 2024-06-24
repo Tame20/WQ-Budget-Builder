@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WQ Budget Simulation Results</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>WQ Budget Simulation Results</h1>
+        <canvas id="investmentChart"></canvas>
+        <div id="future-value-results"></div>
+        <button onclick="goBack()">Go Back</button>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const results = JSON.parse(localStorage.getItem('investmentResults'));
+            const futureValueResults = document.getElementById('future-value-results');
+            const years = JSON.parse(localStorage.getItem('investmentYears'));
+            const labels = [];
+            const data = [];
+
+            if (results) {
+                for (let year = 1; year <= years; year++) {
+                    labels.push(`Year ${year}`);
+                    const tradFutureValue = calculateFutureValue(results.tradAmount, results.tradRate, year);
+                    const rothFutureValue = calculateFutureValue(results.rothAmount, results.rothRate, year);
+                    const debtFutureValue = calculateFutureValue(results.debtAmount, results.debtRate, year);
+                    const bankFutureValue = calculateFutureValue(results.bankAmount, results.bankRate, year);
+                    data.push(tradFutureValue + rothFutureValue + debtFutureValue + bankFutureValue);
+                }
+
+                futureValueResults.innerHTML = `
+                    <p>Retirement (Traditional): $${results.tradFutureValue.toFixed(2)}</p>
+                    <p>Retirement (Roth): $${results.rothFutureValue.toFixed(2)}</p>
+                    <p>Additional Debt Payment: $${results.debtFutureValue.toFixed(2)}</p>
+                    <p>Bank Savings: $${results.bankFutureValue.toFixed(2)}</p>
+                `;
+
+                const ctx = document.getElementById('investmentChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Total Investment Value',
+                            data: data,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } else {
+                futureValueResults.innerHTML = '<p>No results to display.</p>';
+            }
+        });
+
+        function calculateFutureValue(principal, annualRate, years) {
+            const monthlyRate = annualRate / 12 / 100;
+            const months = years * 12;
+            let futureValue = 0;
+
+            for (let i = 0; i < months; i++) {
+                futureValue = (futureValue + principal) * (1 + monthlyRate);
+            }
+
+            return futureValue;
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
