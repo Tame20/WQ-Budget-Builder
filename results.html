@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WQ Budget Simulation Results</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Results</h1>
+        <canvas id="investmentChart"></canvas>
+        <div id="future-value-results"></div>
+        <h2>Charitable Contributions</h2>
+        <canvas id="charityChart"></canvas>
+        <h2>Entertainment and Travel Expenses</h2>
+        <canvas id="entertainmentTravelChart"></canvas>
+        <button onclick="goBack()">Go Back</button>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const results = JSON.parse(localStorage.getItem('investmentResults'));
+            const futureValueResults = document.getElementById('future-value-results');
+            const years = parseInt(localStorage.getItem('investmentYears')) || 0;
+            const labels = [];
+            const tradData = [];
+            const rothData = [];
+            const debtData = [];
+            const bankData = [];
+            const charityData = [];
+            const entertainmentData = [];
+            const travelData = [];
+
+            if (results) {
+                for (let year = 1; year <= years; year++) {
+                    labels.push(`Year ${year}`);
+                    tradData.push(calculateFutureValue(results.tradAmount, results.tradRate, year));
+                    rothData.push(calculateFutureValue(results.rothAmount, results.rothRate, year));
+                    debtData.push(calculateFutureValue(results.debtAmount, results.debtRate, year));
+                    bankData.push(calculateFutureValue(results.bankAmount, results.bankRate, year));
+                    charityData.push(results.charityAmount * year * 12); // Accumulating total contributions over the years
+                    entertainmentData.push(results.entertainmentAmount * year * 12); // Accumulating total entertainment expenses over the years
+                    travelData.push(results.travelAmount * year * 12); // Accumulating total travel expenses over the years
+                }
+
+                futureValueResults.innerHTML = `
+                    <p>Retirement (Traditional): $${formatNumber(results.tradFutureValue)}</p>
+                    <p>Retirement (Roth): $${formatNumber(results.rothFutureValue)}</p>
+                    <p>Additional Debt Payment: $${formatNumber(results.debtFutureValue)}</p>
+                    <p>Bank Savings: $${formatNumber(results.bankFutureValue)}</p>
+                `;
+
+                const ctxInvestment = document.getElementById('investmentChart').getContext('2d');
+                new Chart(ctxInvestment, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Retirement (Traditional)',
+                                data: tradData,
+                                backgroundColor: '#4CAF50',
+                                borderColor: '#388E3C',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Retirement (Roth)',
+                                data: rothData,
+                                backgroundColor: '#2196F3',
+                                borderColor: '#1976D2',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Additional Debt Payment',
+                                data: debtData,
+                                backgroundColor: '#FF9800',
+                                borderColor: '#F57C00',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Bank Savings',
+                                data: bankData,
+                                backgroundColor: '#9C27B0',
+                                borderColor: '#7B1FA2',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                stacked: true,
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += '$' + context.parsed.y.toLocaleString();
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                const ctxCharity = document.getElementById('charityChart').getContext('2d');
+                new Chart(ctxCharity, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Charitable Contributions',
+                                data: charityData,
+                                backgroundColor: '#FF5722',
+                                borderColor: '#E64A19',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += '$' + context.parsed.y.toLocaleString();
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                const ctxEntertainmentTravel = document.getElementById('entertainmentTravelChart').getContext('2d');
+                new Chart(ctxEntertainmentTravel, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Entertainment Expenses',
+                                data: entertainmentData,
+                                backgroundColor: '#3F51B5',
+                                borderColor: '#303F9F',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Travel Expenses',
+                                data: travelData,
+                                backgroundColor: '#FFC107',
+                                borderColor: '#FFA000',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                stacked: true,
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += '$' + context.parsed.y.toLocaleString();
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                futureValueResults.innerHTML = '<p>No results to display.</p>';
+            }
+        });
+
+        function calculateFutureValue(principal, annualRate, years) {
+            const monthlyRate = annualRate / 12 / 100;
+            const months = years * 12;
+            let futureValue = 0;
+
+            for (let i = 0; i < months; i++) {
+                futureValue = (futureValue + principal) * (1 + monthlyRate);
+            }
+
+            return futureValue;
+        }
+
+        function formatNumber(number) {
+            return number.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
