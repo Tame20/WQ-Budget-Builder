@@ -12,6 +12,8 @@
         <h1>WQ Budget Simulation Results</h1>
         <canvas id="investmentChart"></canvas>
         <div id="future-value-results"></div>
+        <h2>Charitable Contributions</h2>
+        <canvas id="charityChart"></canvas>
         <button onclick="goBack()">Go Back</button>
     </div>
     <script>
@@ -20,43 +22,139 @@
             const futureValueResults = document.getElementById('future-value-results');
             const years = parseInt(localStorage.getItem('investmentYears')) || 0;
             const labels = [];
-            const data = [];
+            const tradData = [];
+            const rothData = [];
+            const debtData = [];
+            const bankData = [];
+            const charityData = [];
 
             if (results) {
                 for (let year = 1; year <= years; year++) {
                     labels.push(`Year ${year}`);
-                    const tradFutureValue = calculateFutureValue(results.tradAmount, results.tradRate, year);
-                    const rothFutureValue = calculateFutureValue(results.rothAmount, results.rothRate, year);
-                    const debtFutureValue = calculateFutureValue(results.debtAmount, results.debtRate, year);
-                    const bankFutureValue = calculateFutureValue(results.bankAmount, results.bankRate, year);
-                    const totalValue = tradFutureValue + rothFutureValue + debtFutureValue + bankFutureValue;
-                    data.push(totalValue);
+                    tradData.push(calculateFutureValue(results.tradAmount, results.tradRate, year));
+                    rothData.push(calculateFutureValue(results.rothAmount, results.rothRate, year));
+                    debtData.push(calculateFutureValue(results.debtAmount, results.debtRate, year));
+                    bankData.push(calculateFutureValue(results.bankAmount, results.bankRate, year));
+                    charityData.push(results.charityAmount * year * 12); // Assuming charity is monthly contribution
                 }
 
                 futureValueResults.innerHTML = `
-                    <p>Retirement (Traditional): $${results.tradFutureValue.toFixed(2)}</p>
-                    <p>Retirement (Roth): $${results.rothFutureValue.toFixed(2)}</p>
-                    <p>Additional Debt Payment: $${results.debtFutureValue.toFixed(2)}</p>
-                    <p>Bank Savings: $${results.bankFutureValue.toFixed(2)}</p>
+                    <p>Retirement (Traditional): $${formatNumber(results.tradFutureValue)}</p>
+                    <p>Retirement (Roth): $${formatNumber(results.rothFutureValue)}</p>
+                    <p>Additional Debt Payment: $${formatNumber(results.debtFutureValue)}</p>
+                    <p>Bank Savings: $${formatNumber(results.bankFutureValue)}</p>
                 `;
 
-                const ctx = document.getElementById('investmentChart').getContext('2d');
-                new Chart(ctx, {
+                const ctxInvestment = document.getElementById('investmentChart').getContext('2d');
+                new Chart(ctxInvestment, {
                     type: 'bar',
                     data: {
                         labels: labels,
-                        datasets: [{
-                            label: 'Total Investment Value',
-                            data: data,
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }]
+                        datasets: [
+                            {
+                                label: 'Retirement (Traditional)',
+                                data: tradData,
+                                backgroundColor: '#4CAF50',
+                                borderColor: '#388E3C',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Retirement (Roth)',
+                                data: rothData,
+                                backgroundColor: '#2196F3',
+                                borderColor: '#1976D2',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Additional Debt Payment',
+                                data: debtData,
+                                backgroundColor: '#FF9800',
+                                borderColor: '#F57C00',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Bank Savings',
+                                data: bankData,
+                                backgroundColor: '#9C27B0',
+                                borderColor: '#7B1FA2',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                stacked: true,
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += '$' + context.parsed.y.toLocaleString();
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                const ctxCharity = document.getElementById('charityChart').getContext('2d');
+                new Chart(ctxCharity, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Charitable Contributions',
+                                data: charityData,
+                                backgroundColor: '#FF5722',
+                                borderColor: '#E64A19',
+                                borderWidth: 1
+                            }
+                        ]
                     },
                     options: {
                         scales: {
                             y: {
-                                beginAtZero: true
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += '$' + context.parsed.y.toLocaleString();
+                                        }
+                                        return label;
+                                    }
+                                }
                             }
                         }
                     }
@@ -76,6 +174,10 @@
             }
 
             return futureValue;
+        }
+
+        function formatNumber(number) {
+            return number.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
         function goBack() {
