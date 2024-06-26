@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WQ Budget Simulation Results</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>WQ Budget Simulation Results</h1>
+        <canvas id="investmentChart"></canvas>
+        <div id="future-value-results"></div>
+        <h2>Charitable Contributions</h2>
+        <canvas id="charityChart"></canvas>
+        <h2>Entertainment and Travel Expenses</h2>
+        <canvas id="entertainmentAndTravelChart"></canvas>
+        <button onclick="goBack()">Go Back</button>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const results = JSON.parse(localStorage.getItem('investmentResults'));
+            const futureValueResults = document.getElementById('future-value-results');
+            const years = results.years;
+            const labels = [];
+            const tradData = [];
+            const rothData = [];
+            const debtData = [];
+            const bankData = [];
+            const additionalData = [];
+            const charityData = [];
+            const entertainmentData = [];
+            const travelData = [];
+
+            if (results) {
+                for (let year = 1; year <= years; year++) {
+                    labels.push(`Year ${year}`);
+                    tradData.push(calculateCompoundInterest(results.tradInitial, results.tradAmount, results.tradRate, year));
+                    rothData.push(calculateCompoundInterest(results.rothInitial, results.rothAmount, results.rothRate, year));
+                    debtData.push(calculateCompoundInterest(results.debtInitial, results.debtAmount, results.debtRate, year));
+                    bankData.push(calculateCompoundInterest(results.bankInitial, results.bankAmount, results.bankRate, year));
+                    additionalData.push(calculateCompoundInterest(results.additionalInitial, results.additionalAmount, results.additionalRate, year));
+                    charityData.push(results.charityFutureValue / years * year);
+                    entertainmentData.push(results.entertainmentFutureValue / years * year);
+                    travelData.push(results.travelFutureValue / years * year);
+                }
+
+                futureValueResults.innerHTML = `
+                    <p>Retirement (Traditional): $${tradData[tradData.length - 1].toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                    <p>Retirement (Roth): $${rothData[rothData.length - 1].toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                    <p>Additional Debt Payment: $${debtData[debtData.length - 1].toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                    <p>Bank Savings: $${bankData[bankData.length - 1].toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                    <p>Additional Investment: $${additionalData[additionalData.length - 1].toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                `;
+
+                const ctx = document.getElementById('investmentChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Retirement (Traditional)',
+                                data: tradData,
+                                backgroundColor: '#4CAF50',
+                                borderColor: '#388E3C',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Retirement (Roth)',
+                                data: rothData,
+                                backgroundColor: '#2196F3',
+                                borderColor: '#1976D2',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Additional Debt Payment',
+                                data: debtData,
+                                backgroundColor: '#FF9800',
+                                borderColor: '#F57C00',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Bank Savings',
+                                data: bankData,
+                                backgroundColor: '#9C27B0',
+                                borderColor: '#7B1FA2',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Additional Investment',
+                                data: additionalData,
+                                backgroundColor: '#FFC107',
+                                borderColor: '#FFA000',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                stacked: true,
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString('en-US');
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += '$' + context.parsed.y.toLocaleString('en-US');
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                const ctxCharity = document.getElementById('charityChart').getContext('2d');
+                new Chart(ctxCharity, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Charitable Contributions',
+                                data: charityData,
+                                backgroundColor: '#FF9800',
+                                borderColor: '#F57C00',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString('en-US');
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += '$' + context.parsed.y.toLocaleString('en-US');
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                const ctxEntertainmentAndTravel = document.getElementById('entertainmentAndTravelChart').getContext('2d');
+                new Chart(ctxEntertainmentAndTravel, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Entertainment',
+                                data: entertainmentData,
+                                backgroundColor: '#FF5722',
+                                borderColor: '#E64A19',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Travel',
+                                data: travelData,
+                                backgroundColor: '#FF9800',
+                                borderColor: '#F57C00',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                stacked: true,
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString('en-US');
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += '$' + context.parsed.y.toLocaleString('en-US');
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+            } else {
+                futureValueResults.innerHTML = '<p>No results to display.</p>';
+            }
+        });
+
+        function calculateCompoundInterest(initial, monthly, annualRate, years) {
+            const monthlyRate = annualRate / 12 / 100;
+            const months = years * 12;
+            let futureValue = initial;
+
+            for (let i = 0; i < months; i++) {
+                futureValue = (futureValue + monthly) * (1 + monthlyRate);
+            }
+
+            return futureValue;
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
