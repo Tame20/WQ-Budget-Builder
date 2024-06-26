@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WQ Budget Simulation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>WQ Budget Simulation</h1>
+        
+        <div class="section">
+            <h2>Income</h2>
+            <label for="income">Monthly Paycheck:</label>
+            <input type="text" id="income" value="0" oninput="formatNumberInput(this); updateSavings()" />
+        </div>
+
+        <div class="section">
+            <h2>Debt</h2>
+            <label for="student-loan">Student Loan Payment:</label>
+            <input type="text" id="student-loan" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="credit-card">Credit Card Payments:</label>
+            <input type="text" id="credit-card" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="other-debt">Other Debt Payments:</label>
+            <input type="text" id="other-debt" value="0" oninput="formatNumberInput(this); updateSavings()" />
+        </div>
+
+        <div class="section">
+            <h2>Essential Expenses</h2>
+            <label for="rent">Rent/Mortgage:</label>
+            <input type="text" id="rent" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="insurance">Renter/Homeowner Insurance:</label>
+            <input type="text" id="insurance" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="utilities">Utilities:</label>
+            <input type="text" id="utilities" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="property-tax">Property Tax:</label>
+            <input type="text" id="property-tax" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="home-maintenance">Home Maintenance:</label>
+            <input type="text" id="home-maintenance" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="transportation">Public Transportation:</label>
+            <input type="text" id="transportation" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="car-loan">Car Loan:</label>
+            <input type="text" id="car-loan" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="car-insurance">Car Insurance:</label>
+            <input type="text" id="car-insurance" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="gas">Gas:</label>
+            <input type="text" id="gas" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="car-maintenance">Car Maintenance:</label>
+            <input type="text" id="car-maintenance" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="health-insurance">Health Insurance:</label>
+            <input type="text" id="health-insurance" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="childcare">Childcare:</label>
+            <input type="text" id="childcare" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="groceries">Groceries:</label>
+            <input type="text" id="groceries" value="0" oninput="formatNumberInput(this); updateSavings()" />
+        </div>
+
+        <div class="section">
+            <h2>Discretionary Expenses</h2>
+            <label for="clothing">Clothing:</label>
+            <input type="text" id="clothing" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="internet">Internet:</label>
+            <input type="text" id="internet" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="cable">Cable and Streaming:</label>
+            <input type="text" id="cable" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="phone">Phone Service:</label>
+            <input type="text" id="phone" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="charity">Charitable Contributions:</label>
+            <input type="text" id="charity" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="travel">Travel:</label>
+            <input type="text" id="travel" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="entertainment">Entertainment:</label>
+            <input type="text" id="entertainment" value="0" oninput="formatNumberInput(this); updateSavings()" />
+            <label for="other-discretionary">Others:</label>
+            <input type="text" id="other-discretionary" value="0" oninput="formatNumberInput(this); updateSavings()" />
+        </div>
+
+        <div class="section">
+            <h2>Savings</h2>
+            <div id="savings">Total Monthly Savings: $0.00</div>
+            <div class="wildcard">
+                <label for="wildcard-amount">Wildcard Event Amount:</label>
+                <input type="text" id="wildcard-amount" value="0" oninput="formatNumberInput(this); updateSavings()" />
+                <label for="wildcard-effect">Effect:</label>
+                <select id="wildcard-effect" onchange="updateSavings()">
+                    <option value="positive">Positive</option>
+                    <option value="negative">Negative</option>
+                </select>
+            </div>
+            <div id="accumulated-savings">Total Accumulated Savings (5 years): $0.00</div>
+        </div>
+
+        <div class="section">
+            <h2>Investment Breakdown</h2>
+            <div class="investment-header">
+                <div>Investment</div>
+                <div>Rate of Return (%)</div>
+                <div>Initial Investment ($)</div>
+                <div>Monthly Investment ($)</div>
+            </div>
+            <div class="investment-row">
+                <label>Retirement (Traditional)</label>
+                <input type="text" id="trad-rate" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+                <input type="text" id="trad-initial" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+                <input type="text" id="trad-amount" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+            </div>
+            <div class="investment-row">
+                <label>Retirement (Roth)</label>
+                <input type="text" id="roth-rate" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+                <input type="text" id="roth-initial" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+                <input type="text" id="roth-amount" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+            </div>
+            <div class="investment-row">
+                <label>Additional Debt Payment</label>
+                <input type="text" id="debt-rate" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+                <input type="text" id="debt-initial" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+                <input type="text" id="debt-amount" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+            </div>
+            <div class="investment-row">
+                <label>Bank Savings</label>
+                <input type="text" id="bank-rate" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+                <input type="text" id="bank-initial" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+                <input type="text" id="bank-amount" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+            </div>
+            <div class="investment-row">
+                <label>Additional Investment</label>
+                <input type="text" id="additional-rate" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+                <input type="text" id="additional-initial" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+                <input type="text" id="additional-amount" value="0" oninput="formatNumberInput(this); updateDisplaySavings()" />
+            </div>
+            <div id="investment-warning"></div>
+            <div id="displayed-savings" class="savings-display">Monthly Savings: $0.00</div>
+        </div>
+
+        <div class="section">
+            <h2>Time</h2>
+            <label for="years">Years:</label>
+            <input type="text" id="years" value="0" oninput="formatNumberInput(this)" />
+            <button onclick="calculateFutureValue()">Calculate</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
